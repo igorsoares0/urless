@@ -10,12 +10,9 @@ import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Link2, Mail, Lock, User, Eye, EyeOff } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { useAuthStore } from "@/stores/auth-store"
 
-interface AuthFormsProps {
-  onLogin: (email: string, name: string) => void
-}
-
-export function AuthForms({ onLogin }: AuthFormsProps) {
+export function AuthForms() {
   const [loginEmail, setLoginEmail] = useState("")
   const [loginPassword, setLoginPassword] = useState("")
   const [signupName, setSignupName] = useState("")
@@ -23,8 +20,8 @@ export function AuthForms({ onLogin }: AuthFormsProps) {
   const [signupPassword, setSignupPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
+  const { login, register, isLoading } = useAuthStore()
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -38,20 +35,19 @@ export function AuthForms({ onLogin }: AuthFormsProps) {
       return
     }
 
-    setIsLoading(true)
-
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-
-    // Mock successful login
-    onLogin(loginEmail, loginEmail.split("@")[0])
-
-    toast({
-      title: "Welcome back!",
-      description: "Successfully logged in",
-    })
-
-    setIsLoading(false)
+    try {
+      await login(loginEmail, loginPassword)
+      toast({
+        title: "Welcome back!",
+        description: "Successfully logged in",
+      })
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Login failed",
+        variant: "destructive",
+      })
+    }
   }
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -84,20 +80,19 @@ export function AuthForms({ onLogin }: AuthFormsProps) {
       return
     }
 
-    setIsLoading(true)
-
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-
-    // Mock successful signup
-    onLogin(signupEmail, signupName)
-
-    toast({
-      title: "Account created!",
-      description: "Welcome to ShortLink Pro",
-    })
-
-    setIsLoading(false)
+    try {
+      await register(signupEmail, signupName, signupPassword)
+      toast({
+        title: "Account created!",
+        description: "Welcome to ShortLink Pro",
+      })
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Registration failed",
+        variant: "destructive",
+      })
+    }
   }
 
   return (

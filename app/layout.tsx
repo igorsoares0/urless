@@ -2,12 +2,14 @@ import type { Metadata } from 'next'
 import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
 import { Analytics } from '@vercel/analytics/next'
+import { Providers } from '@/components/providers'
+import { Toaster } from '@/components/ui/toaster'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
-  generator: 'v0.app',
+  title: 'ShortLink Pro',
+  description: 'Professional URL shortening service with QR codes and custom domains',
+  generator: 'ShortLink Pro',
 }
 
 export default function RootLayout({
@@ -18,7 +20,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
-        {children}
+        <Providers>
+          {children}
+          <Toaster />
+        </Providers>
         <Analytics />
       </body>
     </html>
