@@ -16,7 +16,7 @@ import { LinkManagement } from "@/components/link-management"
 import { DomainManagement } from "@/components/domain-management"
 import { AuthWrapper } from "@/components/auth-wrapper"
 import { useAuthStore } from "@/stores/auth-store"
-import { useUrls, useCreateUrl } from "@/hooks/use-urls"
+import { useUrls, useCreateUrl, useUpdateUrl, useDeleteUrl } from "@/hooks/use-urls"
 
 export default function Dashboard() {
   const [url, setUrl] = useState("")
@@ -27,6 +27,8 @@ export default function Dashboard() {
   const { user, isAuthenticated, logout } = useAuthStore()
   const { data: urlsData, isLoading: urlsLoading } = useUrls()
   const createUrlMutation = useCreateUrl()
+  const updateUrlMutation = useUpdateUrl()
+  const deleteUrlMutation = useDeleteUrl()
 
   const urls = urlsData?.urls || []
 
@@ -104,6 +106,14 @@ export default function Dashboard() {
       title: "Logged out",
       description: "You have been successfully logged out",
     })
+  }
+
+  const handleUpdateUrl = (id: string, updates: any) => {
+    updateUrlMutation.mutate({ id, data: updates })
+  }
+
+  const handleDeleteUrl = (id: string) => {
+    deleteUrlMutation.mutate(id)
   }
 
   const totalClicks = urls.reduce((sum, url) => sum + url.clicks, 0)
@@ -358,7 +368,7 @@ export default function Dashboard() {
               </TabsContent>
 
               <TabsContent value="manage">
-                <LinkManagement urls={urls} onUpdateUrl={() => {}} onDeleteUrl={() => {}} />
+                <LinkManagement urls={urls} onUpdateUrl={handleUpdateUrl} onDeleteUrl={handleDeleteUrl} />
               </TabsContent>
 
               <TabsContent value="domains">
