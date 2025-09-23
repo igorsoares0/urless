@@ -70,13 +70,77 @@ export function AnalyticsDashboard({ urls }: AnalyticsDashboardProps) {
   }
 
   const generateTrafficSources = () => {
-    const sources = [
-      { name: "Direct", value: 45, color: "#8884d8" },
-      { name: "Social Media", value: 30, color: "#82ca9d" },
-      { name: "Email", value: 15, color: "#ffc658" },
-      { name: "Search", value: 10, color: "#ff7300" },
-    ]
-    return sources
+    if (urls.length === 0) {
+      return [
+        { name: "No Data", value: 100, color: "#e2e8f0" }
+      ]
+    }
+
+    // Analyze URL domains to simulate traffic sources
+    const domainAnalysis = urls.map(url => {
+      try {
+        const domain = new URL(url.originalUrl).hostname.toLowerCase()
+        let source = "Direct"
+
+        // Social Media domains
+        if (domain.includes('facebook') || domain.includes('instagram') ||
+            domain.includes('twitter') || domain.includes('linkedin') ||
+            domain.includes('tiktok') || domain.includes('youtube')) {
+          source = "Social Media"
+        }
+        // Search engines
+        else if (domain.includes('google') || domain.includes('bing') ||
+                 domain.includes('yahoo') || domain.includes('duckduckgo')) {
+          source = "Search"
+        }
+        // Email/Marketing
+        else if (domain.includes('mail') || domain.includes('newsletter') ||
+                 domain.includes('campaign') || domain.includes('email')) {
+          source = "Email"
+        }
+        // Referral sites
+        else if (domain.includes('reddit') || domain.includes('medium') ||
+                 domain.includes('github') || domain.includes('stackoverflow')) {
+          source = "Referral"
+        }
+
+        return { source, clicks: url.clicks }
+      } catch {
+        return { source: "Direct", clicks: url.clicks }
+      }
+    })
+
+    // Aggregate by source
+    const sourceStats = domainAnalysis.reduce((acc, { source, clicks }) => {
+      acc[source] = (acc[source] || 0) + clicks
+      return acc
+    }, {} as Record<string, number>)
+
+    const totalClicks = Object.values(sourceStats).reduce((sum, clicks) => sum + clicks, 0)
+
+    if (totalClicks === 0) {
+      return [
+        { name: "No Traffic", value: 100, color: "#e2e8f0" }
+      ]
+    }
+
+    // Convert to percentage and create chart data
+    const colors = {
+      "Direct": "#3b82f6",
+      "Social Media": "#10b981",
+      "Search": "#f59e0b",
+      "Email": "#ef4444",
+      "Referral": "#8b5cf6"
+    }
+
+    return Object.entries(sourceStats)
+      .map(([source, clicks]) => ({
+        name: source,
+        value: Math.round((clicks / totalClicks) * 100),
+        clicks,
+        color: colors[source as keyof typeof colors] || "#6b7280"
+      }))
+      .sort((a, b) => b.value - a.value)
   }
 
   const dailyData = generateDailyData()
@@ -224,18 +288,18 @@ export function AnalyticsDashboard({ urls }: AnalyticsDashboardProps) {
         <Card>
           <CardHeader>
             <CardTitle className="text-foreground">Traffic Sources</CardTitle>
-            <CardDescription>Where your clicks are coming from</CardDescription>
+            <CardDescription>Analyzed from your shortened URL destinations</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={320}>
               <PieChart>
                 <Pie
                   data={trafficSources}
                   cx="50%"
                   cy="50%"
-                  innerRadius={60}
-                  outerRadius={100}
-                  paddingAngle={5}
+                  innerRadius={50}
+                  outerRadius={110}
+                  paddingAngle={2}
                   dataKey="value"
                 >
                   {trafficSources.map((entry, index) => (
@@ -247,17 +311,28 @@ export function AnalyticsDashboard({ urls }: AnalyticsDashboardProps) {
                     backgroundColor: "hsl(var(--card))",
                     border: "1px solid hsl(var(--border))",
                     borderRadius: "8px",
+                    color: "hsl(var(--foreground))",
+                    boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
                   }}
+                  formatter={(value: number, name: string, props: any) => [
+                    `${value}% (${props.payload.clicks || 0} clicks)`,
+                    name
+                  ]}
                 />
               </PieChart>
             </ResponsiveContainer>
-            <div className="flex flex-wrap gap-4 mt-4">
+
+            {/* Legend with click counts */}
+            <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-border">
               {trafficSources.map((source, index) => (
                 <div key={index} className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: source.color }} />
-                  <span className="text-sm text-muted-foreground">
-                    {source.name} ({source.value}%)
-                  </span>
+                  <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: source.color }} />
+                  <div className="flex-1 min-w-0">
+                    <span className="text-sm text-foreground font-medium">{source.name}</span>
+                    <div className="text-xs text-muted-foreground">
+                      {source.value}% • {source.clicks || 0} clicks
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
