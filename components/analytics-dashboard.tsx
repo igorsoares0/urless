@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts"
 import { TrendingUp, Calendar, Globe, MousePointer, Clock, Award } from "lucide-react"
 
 interface ShortenedUrl {
@@ -19,14 +19,43 @@ interface AnalyticsDashboardProps {
 }
 
 export function AnalyticsDashboard({ urls }: AnalyticsDashboardProps) {
-  // Generate mock data for charts
+  // Generate real daily data from URLs
   const generateDailyData = () => {
-    const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-    return days.map((day) => ({
-      day,
-      clicks: Math.floor(Math.random() * 100) + 20,
-      links: Math.floor(Math.random() * 10) + 1,
-    }))
+    const today = new Date()
+    const last7Days = []
+
+    // Generate last 7 days
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(today)
+      date.setDate(date.getDate() - i)
+      last7Days.push(date)
+    }
+
+    return last7Days.map((date) => {
+      const dayName = date.toLocaleDateString('en-US', { weekday: 'short' })
+      const dateStr = date.toDateString()
+
+      // Count URLs created on this day
+      const linksCreated = urls.filter(url => {
+        const urlDate = new Date(url.createdAt)
+        return urlDate.toDateString() === dateStr
+      }).length
+
+      // Calculate total clicks for URLs created on this day (simulated)
+      const urlsFromThisDay = urls.filter(url => {
+        const urlDate = new Date(url.createdAt)
+        return urlDate.toDateString() === dateStr
+      })
+
+      const clicksFromThisDay = urlsFromThisDay.reduce((sum, url) => sum + url.clicks, 0)
+
+      return {
+        day: dayName,
+        date: date.getDate(),
+        clicks: clicksFromThisDay,
+        links: linksCreated,
+      }
+    })
   }
 
   const generateTopLinks = () => {
@@ -123,24 +152,71 @@ export function AnalyticsDashboard({ urls }: AnalyticsDashboardProps) {
         <Card>
           <CardHeader>
             <CardTitle className="text-foreground">Daily Activity</CardTitle>
-            <CardDescription>Clicks and links created over the past week</CardDescription>
+            <CardDescription>Links created and total clicks over the past 7 days</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={dailyData}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis dataKey="day" className="text-muted-foreground" />
-                <YAxis className="text-muted-foreground" />
+            <ResponsiveContainer width="100%" height={320}>
+              <BarChart
+                data={dailyData}
+                margin={{ top: 10, right: 30, left: 20, bottom: 30 }}
+                barGap={10}
+                barCategoryGap="30%"
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" opacity={0.5} />
+                <XAxis
+                  dataKey="day"
+                  tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
+                  axisLine={false}
+                  tickLine={false}
+                />
                 <Tooltip
                   contentStyle={{
                     backgroundColor: "hsl(var(--card))",
                     border: "1px solid hsl(var(--border))",
                     borderRadius: "8px",
+                    color: "hsl(var(--foreground))",
+                    boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
                   }}
+                  formatter={(value: number, name: string) => [
+                    value,
+                    name === 'links' ? 'Links Created' : 'Total Clicks'
+                  ]}
+                  labelFormatter={(label) => `${label}`}
+                  cursor={{ fill: 'transparent' }}
                 />
-                <Bar dataKey="clicks" fill="hsl(var(--primary))" radius={4} />
+                <Bar
+                  dataKey="links"
+                  fill="#10b981"
+                  radius={[3, 3, 0, 0]}
+                  name="links"
+                  barSize={30}
+                />
+                <Bar
+                  dataKey="clicks"
+                  fill="#3b82f6"
+                  radius={[3, 3, 0, 0]}
+                  name="clicks"
+                  barSize={30}
+                />
               </BarChart>
             </ResponsiveContainer>
+
+            {/* Custom Legend */}
+            <div className="flex items-center justify-center gap-6 mt-4 pt-4 border-t border-border">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded" style={{ backgroundColor: '#3b82f6' }}></div>
+                <span className="text-sm text-muted-foreground">Total Clicks</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded" style={{ backgroundColor: '#10b981' }}></div>
+                <span className="text-sm text-muted-foreground">Links Created</span>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
