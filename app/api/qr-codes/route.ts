@@ -26,26 +26,33 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid URL format' }, { status: 400 })
     }
 
-    // Generate QR code URL
-    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}`
-
-    // Save QR code to database
+    // Save QR code to database first to get ID
     const qrCode = await prisma.qRCode.create({
       data: {
         url,
-        qrCodeUrl,
+        qrCodeUrl: '', // Temporary empty value
         title: title?.trim() || undefined,
         userId: decoded.userId,
       },
     })
 
+    // Generate tracking URL and QR code URL
+    const trackingUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/qr/${qrCode.id}`
+    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(trackingUrl)}`
+
+    // Update with the actual QR code URL
+    const updatedQrCode = await prisma.qRCode.update({
+      where: { id: qrCode.id },
+      data: { qrCodeUrl },
+    })
+
     return NextResponse.json({
       qrCode: {
-        id: qrCode.id,
-        url: qrCode.url,
-        qrCodeUrl: qrCode.qrCodeUrl,
-        title: qrCode.title,
-        createdAt: qrCode.createdAt,
+        id: updatedQrCode.id,
+        url: updatedQrCode.url,
+        qrCodeUrl: updatedQrCode.qrCodeUrl,
+        title: updatedQrCode.title,
+        createdAt: updatedQrCode.createdAt,
       }
     })
   } catch (error) {
@@ -70,9 +77,26 @@ export async function GET(request: NextRequest) {
     const qrCodes = await prisma.qRCode.findMany({
       where: { userId: decoded.userId },
       orderBy: { createdAt: 'desc' },
+      include: {
+        _count: {
+          select: { clickEvents: true }
+        }
+      }
     })
 
-    return NextResponse.json({ qrCodes })
+    // Add analytics summary to each QR code
+    const qrCodesWithAnalytics = qrCodes.map(qrCode => ({
+      id: qrCode.id,
+      url: qrCode.url,
+      qrCodeUrl: qrCode.qrCodeUrl,
+      title: qrCode.title,
+      clicks: qrCode.clicks,
+      uniqueClicks: qrCode.uniqueClicks,
+      createdAt: qrCode.createdAt,
+      updatedAt: qrCode.updatedAt,
+    }))
+
+    return NextResponse.json({ qrCodes: qrCodesWithAnalytics })
   } catch (error) {
     console.error('Error fetching QR codes:', error)
     return NextResponse.json(

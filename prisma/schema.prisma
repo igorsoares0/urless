@@ -73,11 +73,32 @@ model QRCode {
   url         String
   qrCodeUrl   String
   title       String?
+  clicks      Int      @default(0)
+  uniqueClicks Int     @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   userId      String
 
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clickEvents QRClickEvent[]
 
   @@map("qr_codes")
+}
+
+model QRClickEvent {
+  id          String   @id @default(cuid())
+  timestamp   DateTime @default(now())
+  ipAddress   String
+  userAgent   String?
+  country     String?
+  city        String?
+  device      String?
+  browser     String?
+  os          String?
+  referrer    String?
+  qrCodeId    String
+
+  qrCode      QRCode   @relation(fields: [qrCodeId], references: [id], onDelete: Cascade)
+
+  @@map("qr_click_events")
 }

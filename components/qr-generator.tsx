@@ -4,11 +4,12 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { QrCode, Download, ExternalLink, Copy, Save, Trash2, Edit3 } from "lucide-react"
+import { QrCode, Download, ExternalLink, Copy, Save, Trash2, Edit3, BarChart3 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useCreateQRCode, useQRCodes, useDeleteQRCode, useUpdateQRCode } from "@/hooks/use-qr-codes"
 import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
+import { QRAnalytics } from "@/components/qr-analytics"
 
 export function QRGenerator() {
   const [url, setUrl] = useState("")
@@ -17,6 +18,7 @@ export function QRGenerator() {
   const [isGenerating, setIsGenerating] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editTitle, setEditTitle] = useState("")
+  const [showAnalytics, setShowAnalytics] = useState<string | null>(null)
 
   const { toast } = useToast()
   const { data: qrCodesData, isLoading } = useQRCodes()
@@ -243,6 +245,16 @@ export function QRGenerator() {
     }
   }
 
+  // Show analytics view if selected
+  if (showAnalytics) {
+    return (
+      <QRAnalytics
+        qrCodeId={showAnalytics}
+        onBack={() => setShowAnalytics(null)}
+      />
+    )
+  }
+
   return (
     <div className="space-y-6">
       <Card>
@@ -425,17 +437,24 @@ export function QRGenerator() {
                         </div>
                       )}
 
-                      <Badge variant="secondary" className="text-xs">
-                        {new Date(qrCode.createdAt).toLocaleDateString()}
-                      </Badge>
+                      <div className="flex gap-2">
+                        <Badge variant="secondary" className="text-xs">
+                          {new Date(qrCode.createdAt).toLocaleDateString()}
+                        </Badge>
+                        <Badge variant="outline" className="text-xs">
+                          {qrCode.clicks || 0} scans
+                        </Badge>
+                        <Badge variant="outline" className="text-xs">
+                          {qrCode.uniqueClicks || 0} unique
+                        </Badge>
+                      </div>
                     </div>
 
-                    <div className="flex gap-2">
+                    <div className="grid grid-cols-2 gap-2">
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => downloadQRCodeByUrl(qrCode.qrCodeUrl)}
-                        className="flex-1"
                       >
                         <Download className="h-3 w-3 mr-1" />
                         Download
@@ -445,10 +464,18 @@ export function QRGenerator() {
                         size="sm"
                         variant="outline"
                         onClick={() => copyUrlToClipboard(qrCode.url)}
-                        className="flex-1"
                       >
                         <Copy className="h-3 w-3 mr-1" />
                         Copy
+                      </Button>
+
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setShowAnalytics(qrCode.id)}
+                      >
+                        <BarChart3 className="h-3 w-3 mr-1" />
+                        Analytics
                       </Button>
 
                       <Button
@@ -459,6 +486,7 @@ export function QRGenerator() {
                         className="text-red-600 hover:text-red-700"
                       >
                         <Trash2 className="h-3 w-3" />
+                        Delete
                       </Button>
                     </div>
                   </div>
