@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Copy, ExternalLink, BarChart3, Link2, Zap, LogOut, Settings, QrCode, Download, Globe } from "lucide-react"
+import { Copy, ExternalLink, BarChart3, Link2, Zap, LogOut, Settings, QrCode, Download, Globe, TrendingUp } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
@@ -17,6 +17,7 @@ import { DomainManagement } from "@/components/domain-management"
 import { AuthWrapper } from "@/components/auth-wrapper"
 import { useAuthStore } from "@/stores/auth-store"
 import { useUrls, useCreateUrl, useUpdateUrl, useDeleteUrl } from "@/hooks/use-urls"
+import { useRouter } from "next/navigation"
 
 export default function Dashboard() {
   const [url, setUrl] = useState("")
@@ -29,6 +30,7 @@ export default function Dashboard() {
   const createUrlMutation = useCreateUrl()
   const updateUrlMutation = useUpdateUrl()
   const deleteUrlMutation = useDeleteUrl()
+  const router = useRouter()
 
   const urls = urlsData?.urls || []
 
@@ -348,6 +350,9 @@ export default function Dashboard() {
                                   <Download className="w-4 h-4" />
                                 </Button>
                               )}
+                              <Button variant="outline" size="sm" onClick={() => router.push(`/analytics/${item.id}`)}>
+                                <TrendingUp className="w-4 h-4" />
+                              </Button>
                               <Button variant="outline" size="sm" onClick={() => window.open(item.originalUrl, "_blank")}>
                                 <ExternalLink className="w-4 h-4" />
                               </Button>

@@ -16,8 +16,9 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Copy, ExternalLink, Edit, Trash2, Search, Filter, SortAsc, SortDesc, Calendar, BarChart3 } from "lucide-react"
+import { Copy, ExternalLink, Edit, Trash2, Search, Filter, SortAsc, SortDesc, Calendar, BarChart3, TrendingUp } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { useRouter } from "next/navigation"
 
 interface ShortenedUrl {
   id: string
@@ -47,6 +48,7 @@ export function LinkManagement({ urls, onUpdateUrl, onDeleteUrl }: LinkManagemen
   const [editOriginalUrl, setEditOriginalUrl] = useState("")
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
   const { toast } = useToast()
+  const router = useRouter()
 
   // Filter and sort URLs
   const filteredAndSortedUrls = urls
@@ -284,6 +286,10 @@ export function LinkManagement({ urls, onUpdateUrl, onDeleteUrl }: LinkManagemen
 
                     <Button variant="outline" size="sm" onClick={() => window.open(item.originalUrl, "_blank")}>
                       <ExternalLink className="w-4 h-4" />
+                    </Button>
+
+                    <Button variant="outline" size="sm" onClick={() => router.push(`/analytics/${item.id}`)}>
+                      <TrendingUp className="w-4 h-4" />
                     </Button>
 
                     <Button variant="outline" size="sm" onClick={() => handleEdit(item)}>
