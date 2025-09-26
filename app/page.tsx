@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Copy, ExternalLink, BarChart3, Link2, Zap, LogOut, Settings, QrCode, Download, Globe, TrendingUp } from "lucide-react"
+import { Copy, ExternalLink, BarChart3, Link2, Zap, LogOut, Settings as SettingsIcon, QrCode, Download, Globe, TrendingUp } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
@@ -16,6 +16,7 @@ import { LinkManagement } from "@/components/link-management"
 import { DomainManagement } from "@/components/domain-management"
 import { AuthWrapper } from "@/components/auth-wrapper"
 import { QRGenerator } from "@/components/qr-generator"
+import { Settings } from "@/components/settings"
 import { useAuthStore } from "@/stores/auth-store"
 import { useUrls, useCreateUrl, useUpdateUrl, useDeleteUrl } from "@/hooks/use-urls"
 import { useRouter } from "next/navigation"
@@ -155,7 +156,7 @@ export default function Dashboard() {
 
           <main className="container mx-auto px-4 py-8 max-w-6xl">
             <Tabs defaultValue="dashboard" className="w-full">
-              <TabsList className="grid w-full grid-cols-5 mb-8">
+              <TabsList className="grid w-full grid-cols-6 mb-8">
                 <TabsTrigger value="dashboard" className="flex items-center gap-2">
                   <Link2 className="w-4 h-4" />
                   Dashboard
@@ -165,7 +166,7 @@ export default function Dashboard() {
                   QR Generator
                 </TabsTrigger>
                 <TabsTrigger value="manage" className="flex items-center gap-2">
-                  <Settings className="w-4 h-4" />
+                  <SettingsIcon className="w-4 h-4" />
                   Manage
                 </TabsTrigger>
                 <TabsTrigger value="domains" className="flex items-center gap-2">
@@ -175,6 +176,10 @@ export default function Dashboard() {
                 <TabsTrigger value="analytics" className="flex items-center gap-2">
                   <BarChart3 className="w-4 h-4" />
                   Analytics
+                </TabsTrigger>
+                <TabsTrigger value="settings" className="flex items-center gap-2">
+                  <SettingsIcon className="w-4 h-4" />
+                  Settings
                 </TabsTrigger>
               </TabsList>
 
@@ -391,6 +396,10 @@ export default function Dashboard() {
 
               <TabsContent value="analytics">
                 <AnalyticsDashboard urls={urls} />
+              </TabsContent>
+
+              <TabsContent value="settings">
+                <Settings />
               </TabsContent>
             </Tabs>
           </main>
