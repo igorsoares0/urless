@@ -15,6 +15,7 @@ import { AuthForms } from "@/components/auth-forms"
 import { LinkManagement } from "@/components/link-management"
 import { DomainManagement } from "@/components/domain-management"
 import { AuthWrapper } from "@/components/auth-wrapper"
+import { QRGenerator } from "@/components/qr-generator"
 import { useAuthStore } from "@/stores/auth-store"
 import { useUrls, useCreateUrl, useUpdateUrl, useDeleteUrl } from "@/hooks/use-urls"
 import { useRouter } from "next/navigation"
@@ -154,10 +155,14 @@ export default function Dashboard() {
 
           <main className="container mx-auto px-4 py-8 max-w-6xl">
             <Tabs defaultValue="dashboard" className="w-full">
-              <TabsList className="grid w-full grid-cols-4 mb-8">
+              <TabsList className="grid w-full grid-cols-5 mb-8">
                 <TabsTrigger value="dashboard" className="flex items-center gap-2">
                   <Link2 className="w-4 h-4" />
                   Dashboard
+                </TabsTrigger>
+                <TabsTrigger value="qr-generator" className="flex items-center gap-2">
+                  <QrCode className="w-4 h-4" />
+                  QR Generator
                 </TabsTrigger>
                 <TabsTrigger value="manage" className="flex items-center gap-2">
                   <Settings className="w-4 h-4" />
@@ -378,6 +383,10 @@ export default function Dashboard() {
 
               <TabsContent value="domains">
                 <DomainManagement userId={user?.id || ""} />
+              </TabsContent>
+
+              <TabsContent value="qr-generator">
+                <QRGenerator />
               </TabsContent>
 
               <TabsContent value="analytics">

@@ -23,6 +23,7 @@ model User {
   updatedAt DateTime @updatedAt
 
   urls      Url[]
+  qrCodes   QRCode[]
 
   @@map("users")
 }
@@ -65,4 +66,18 @@ model ClickEvent {
   url         Url      @relation(fields: [urlId], references: [id], onDelete: Cascade)
 
   @@map("click_events")
+}
+
+model QRCode {
+  id          String   @id @default(cuid())
+  url         String
+  qrCodeUrl   String
+  title       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  userId      String
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("qr_codes")
 }
